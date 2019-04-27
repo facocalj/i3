@@ -459,6 +459,49 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
     return count;
 }
 
+
+void x_shape_title(Con *con){
+
+  if (con->layout != L_TABBED && con->layout != L_STACKED){return;}
+
+  uint16_t w  = con->rect.width;
+  uint16_t h  = con->rect.height;
+
+  xcb_pixmap_t pid = xcb_generate_id(conn);
+
+  xcb_create_pixmap(conn, 1, pid, con->frame.id, w, h);
+
+  xcb_gcontext_t black = xcb_generate_id(conn);
+  xcb_gcontext_t white = xcb_generate_id(conn);
+
+  xcb_create_gc(conn, black, pid, XCB_GC_FOREGROUND, (uint32_t[]){0, 0});
+  xcb_create_gc(conn, white, pid, XCB_GC_FOREGROUND, (uint32_t[]){1, 0});
+
+  int32_t r = 13;
+  int32_t d = r * 2;
+
+  xcb_rectangle_t bounding = {0, 0, w, h};
+
+  xcb_arc_t arcs[] = {
+                      { -1, -1, d, d, 0, 360 << 6 },
+                      { w-d, -1, d, d, 0, 360 << 6 },
+  };
+
+  xcb_rectangle_t rects[] = {
+                             { r, 0, w-d, h },
+                             { 0, r, w, h-r },
+  };
+
+  xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
+  xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
+  xcb_poly_fill_arc(conn, pid, white, 2, arcs);
+
+  xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, con->frame.id, 0, 0, pid);
+  xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_CLIP, con->frame.id, 0, 0, pid);
+
+  xcb_free_pixmap(conn, pid);
+}
+
 /*
  * Round window corners when possible
  *
@@ -467,8 +510,11 @@ void x_shape_window(Con *con) {
 
   const xcb_query_extension_reply_t *shape_query;
   shape_query = xcb_get_extension_data(conn, &xcb_shape_id);
-  if (!shape_query->present) return; 
-  
+  if (!shape_query->present) return;
+
+  // We don't want a curved dock, do we?
+  if (con->parent->type == CT_DOCKAREA){return;}
+
   if (con->fullscreen_mode) {
 
     xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, con->frame.id, 0, 0, XCB_NONE);
@@ -478,17 +524,17 @@ void x_shape_window(Con *con) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
-    
+
     xcb_pixmap_t pid = xcb_generate_id(conn);
-    
+
     xcb_create_pixmap(conn, 1, pid, con->frame.id, w, h);
-    
+
     xcb_gcontext_t black = xcb_generate_id(conn);
     xcb_gcontext_t white = xcb_generate_id(conn);
-    
+
     xcb_create_gc(conn, black, pid, XCB_GC_FOREGROUND, (uint32_t[]){0, 0});
     xcb_create_gc(conn, white, pid, XCB_GC_FOREGROUND, (uint32_t[]){1, 0});
-    
+
     int32_t r = 13;
     int32_t d = r * 2;
 
@@ -502,12 +548,12 @@ void x_shape_window(Con *con) {
                           { -1, h-d, d, d, 0, 360 << 6 },
                           { w-d, h-d, d, d, 0, 360 << 6 }
       };
-      
+
       xcb_rectangle_t rects[] = {
                                  { r, 0, w-d, h },
                                  { 0, 0, w, h-r },
       };
-      
+
       xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
       xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
       xcb_poly_fill_arc(conn, pid, white, 2, arcs);
@@ -520,21 +566,21 @@ void x_shape_window(Con *con) {
                           { w-d, -1, d, d, 0, 360 << 6 },
                           { w-d, h-d, d, d, 0, 360 << 6 },
       };
-      
+
       xcb_rectangle_t rects[] = {
                                  { r, 0, w-d, h },
                                  { 0, r, w, h-d },
       };
-      
+
       xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
       xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
       xcb_poly_fill_arc(conn, pid, white, 4, arcs);
 
     }
-    
+
     xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, con->frame.id, 0, 0, pid);
     xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_CLIP, con->frame.id, 0, 0, pid);
-    
+
     xcb_free_pixmap(conn, pid);
 
   }
@@ -795,7 +841,6 @@ void x_draw_decoration(Con *con) {
 
     x_draw_decoration_after_title(con, p);
 copy_pixmaps:
-    x_shape_window(con);
     draw_util_copy_surface(&(con->frame_buffer), &(con->frame), 0, 0, 0, 0, con->rect.width, con->rect.height);
 }
 
@@ -1067,10 +1112,15 @@ void x_push_node(Con *con) {
             if (!con->parent ||
                 con->parent->layout != L_STACKED ||
                 TAILQ_FIRST(&(con->parent->focus_head)) == con)
+            {
                 /* Render the decoration now to make the correct decoration visible
                  * from the very first moment. Later calls will be cached, so this
                  * doesn’t hurt performance. */
                 x_deco_recurse(con);
+                x_shape_window(con);
+                x_shape_title(con);
+                // parent->frame_buffer.id
+            }
         }
 
         DLOG("setting rect (%d, %d, %d, %d)\n", rect.x, rect.y, rect.width, rect.height);
