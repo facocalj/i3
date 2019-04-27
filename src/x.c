@@ -841,6 +841,7 @@ void x_draw_decoration(Con *con) {
 
     x_draw_decoration_after_title(con, p);
 copy_pixmaps:
+    x_shape_window(con);
     draw_util_copy_surface(&(con->frame_buffer), &(con->frame), 0, 0, 0, 0, con->rect.width, con->rect.height);
 }
 
@@ -1117,9 +1118,7 @@ void x_push_node(Con *con) {
                  * from the very first moment. Later calls will be cached, so this
                  * doesn’t hurt performance. */
                 x_deco_recurse(con);
-                x_shape_window(con);
                 x_shape_title(con);
-                // parent->frame_buffer.id
             }
         }
 
