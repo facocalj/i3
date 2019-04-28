@@ -467,6 +467,7 @@ void x_shape_title(Con *con){
         con->parent->type != CT_WORKSPACE) {
         return;
     }
+
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
@@ -543,22 +544,40 @@ void x_shape_window(Con *con) {
 
     xcb_rectangle_t bounding = {0, 0, w, h};
 
+    if (con->parent->type != CT_WORKSPACE) {
 
-    xcb_arc_t arcs[] = {
-                        { 0, -dh, d, d, 0, 360 << 6 },
-                        { 0, h-d, d, d, 0, 360 << 6 },
-                        { w-d, -dh, d, d, 0, 360 << 6 },
-                        { w-d, h-d, d, d, 0, 360 << 6 },
-    };
+      xcb_arc_t arcs[] = {
+         { -1, h-d, d, d, 0, 360 << 6 },
+         { w-d, h-d, d, d, 0, 360 << 6 }
+      };
 
-    xcb_rectangle_t rects[] = {
-                               { r, 0, w-d, h },
-                               { 0, r-dh, w, h-d+dh },
-    };
+      xcb_rectangle_t rects[] = {
+         { r, 0, w-d, h },
+         { 0, 0, w, h-r },
+      };
 
-    xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
-    xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
-    xcb_poly_fill_arc(conn, pid, white, 4, arcs);
+      xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
+      xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
+      xcb_poly_fill_arc(conn, pid, white, 4, arcs);
+
+    } else {
+
+      xcb_arc_t arcs[] = {
+        { -1, -dh, d, d, 0, 360 << 6 },
+        { -1, h-d, d, d, 0, 360 << 6 },
+        { w-d, -dh, d, d, 0, 360 << 6 },
+        { w-d, h-d, d, d, 0, 360 << 6 },
+      };
+
+      xcb_rectangle_t rects[] = {
+        { r, 0, w-d, h },
+        { 0, r-dh, w, h-d+dh },
+      };
+
+      xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
+      xcb_poly_fill_rectangle(conn, pid, white, 2, rects);
+      xcb_poly_fill_arc(conn, pid, white, 4, arcs);
+    }
 
     xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, con->frame.id, 0, 0, pid);
     xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_CLIP, con->frame.id, 0, 0, pid);
