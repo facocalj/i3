@@ -544,7 +544,8 @@ void x_shape_window(Con *con) {
 
     xcb_rectangle_t bounding = {0, 0, w, h};
 
-    if (con->parent->type != CT_WORKSPACE) {
+    if (con->parent->type != CT_WORKSPACE &&
+        con->parent->parent->type != CT_WORKSPACE) {
 
       xcb_arc_t arcs[] = {
          { -1, h-d, d, d, 0, 360 << 6 },
