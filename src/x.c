@@ -459,7 +459,6 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
     return count;
 }
 
-
 void x_shape_title(Con *con){
 
     if ((con->layout != L_TABBED &&
@@ -912,11 +911,73 @@ static void x_shape_frame(Con *con, xcb_shape_sk_t shape_kind) {
                       con->window->id);
     xcb_rectangle_t rectangles[4];
     size_t rectangles_count = x_get_border_rectangles(con, rectangles);
+
+    uint16_t w  = con->window_rect.x;
+    uint16_t h  = con->window_rect.y;
+    uint16_t b = con->border_width;
+
+    xcb_pixmap_t pid = xcb_generate_id(conn);
+    xcb_create_pixmap(conn, 1, pid, con->frame.id, w, h);
+
+    xcb_gcontext_t black = xcb_generate_id(conn);
+    xcb_gcontext_t white = xcb_generate_id(conn);
+
+    xcb_create_gc(conn, black, pid, XCB_GC_FOREGROUND, (uint32_t[]){0, 0});
+    xcb_create_gc(conn, white, pid, XCB_GC_FOREGROUND, (uint32_t[]){1, 0});
+
+    int32_t r = 25;
+    int32_t d = r * 2;
+	uint16_t ow  = w+2*b;
+	uint16_t oh  = h+2*b;
+
+    xcb_rectangle_t bounding = {0, 0, ow, oh};
+    xcb_poly_fill_rectangle(conn, pid, black, 1, &bounding);
+
+    xcb_arc_t outer_arcs[] = {
+        { -1,     -1, d, d, 0, 360 << 6 },
+        { -1,   oh-d, d, d, 0, 360 << 6 },
+        { ow-d,   -1, d, d, 0, 360 << 6 },
+        { ow-d, oh-d, d, d, 0, 360 << 6 },
+      };
+
+	xcb_rectangle_t outer_rects[] = {
+		{ r, 0, ow-d,   oh },
+		{ 0, r,   ow, oh-d },
+	};
+
+	xcb_poly_fill_rectangle(conn, pid, white, 2, outer_rects);
+    xcb_poly_fill_arc(conn, pid, white, 4, outer_arcs);
+
+    xcb_arc_t inner_arcs[] = {
+        { -1,   -1, d, d, 0, 360 << 6 },
+        { -1,  h-d, d, d, 0, 360 << 6 },
+        { w-d,  -1, d, d, 0, 360 << 6 },
+        { w-d, h-d, d, d, 0, 360 << 6 },
+      };
+
+	xcb_rectangle_t inner_rects[] = {
+		{ r, 0, w-d,   h },
+		{ 0, r,   w, h-d },
+	};
+
+    xcb_rectangle_t clipping= {0, 0, w, h};
+    xcb_poly_fill_rectangle(conn, pid, black, 1, &clipping);
+
+    xcb_poly_fill_rectangle(conn, pid, white, 2, inner_rects);
+    xcb_poly_fill_arc(conn, pid, white, 4, inner_arcs);
+
+    xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, con->frame.id, -b, -b, pid);
+    xcb_shape_mask(conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_CLIP, con->frame.id, 0, 0, pid);
+
+    xcb_poly_arc(conn, con->frame.id, XCB_GC_FOREGROUND, 4, inner_arcs);
+
+
     if (rectangles_count) {
         xcb_shape_rectangles(conn, XCB_SHAPE_SO_UNION, shape_kind,
                              XCB_CLIP_ORDERING_UNSORTED, con->frame.id,
                              0, 0, rectangles_count, rectangles);
     }
+    xcb_free_pixmap(conn, pid);
 }
 
 /*
