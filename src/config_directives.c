@@ -318,6 +318,61 @@ CFGFUN(smart_gaps, const char *enable) {
         config.smart_gaps = eval_boolstr(enable) ? SMART_GAPS_ON : SMART_GAPS_OFF;
 }
 
+static void create_corners_assignment(const char *workspace, corners_shape_t shape, int pixels) {
+    DLOG("Setting corners for workspace %s", workspace);
+
+    struct Workspace_Assignment *assignment;
+    TAILQ_FOREACH(assignment, &ws_assignments, ws_assignments) {
+        if (strcasecmp(assignment->name, workspace) == 0) {
+            assignment->corners.size = pixels;
+            assignment->corners.shape = shape;
+
+            return;
+        }
+    }
+
+    // Assignment does not yet exist, let's create it.
+    assignment = scalloc(1, sizeof(struct Workspace_Assignment));
+    assignment->name = sstrdup(workspace);
+    assignment->output = NULL;
+
+    assignment->corners.size = pixels;
+    assignment->corners.shape = shape;
+
+    TAILQ_INSERT_TAIL(&ws_assignments, assignment, ws_assignments);
+}
+CFGFUN(corners, const char *workspace, const char *shape, const long value) {
+    int pixels = logical_px(value);
+
+    // If no shape or default was defined
+    if ((shape == NULL) || !strcmp(shape, "default")) {
+        if (workspace == NULL) {
+            config.corners.size = 0;
+            config.corners.shape = DEFAULT_CORNERS;
+        } else {
+            create_corners_assignment(workspace, DEFAULT_CORNERS, pixels);
+        }
+    } else if (!strcmp(shape, "rounded")) {
+        if (workspace == NULL) {
+            config.corners.size = pixels;
+            config.corners.shape = ROUNDED_CORNERS;
+        } else {
+
+            create_corners_assignment(workspace, ROUNDED_CORNERS, pixels);
+        }
+    } else if (!strcmp(shape, "triangular")) {
+        if (workspace == NULL) {
+            config.corners.size = pixels;
+            config.corners.shape = TRIANGULAR_CORNERS;
+        } else {
+            create_corners_assignment(workspace, TRIANGULAR_CORNERS, pixels);
+        }
+    } else {
+        ELOG("Invalid command, cannot process shape %s", shape);
+    }
+}
+
+
 CFGFUN(floating_minimum_size, const long width, const long height) {
     config.floating_minimum_width = width;
     config.floating_minimum_height = height;

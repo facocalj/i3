@@ -228,6 +228,9 @@ bool load_configuration(const char *override_configpath, config_load_t load_type
     config.gaps.bottom = 0;
     config.gaps.left = 0;
 
+    config.corners.size = 13;
+    config.corners.shape = ROUNDED_CORNERS;
+
     /* Set default urgency reset delay to 500ms */
     if (config.workspace_urgency_timer == 0)
         config.workspace_urgency_timer = 0.5;

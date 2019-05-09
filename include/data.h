@@ -48,6 +48,7 @@ typedef struct Match Match;
 typedef struct Assignment Assignment;
 typedef struct Window i3Window;
 typedef struct gaps_t gaps_t;
+typedef struct corners_t corners_t;
 typedef struct mark_t mark_t;
 
 /******************************************************************************
@@ -84,6 +85,11 @@ typedef enum { SMART_BORDERS_OFF,
 typedef enum { SMART_GAPS_OFF,
                SMART_GAPS_ON,
                SMART_GAPS_INVERSE_OUTER } smart_gaps_t;
+
+typedef enum { DEFAULT_CORNERS,
+               ROUNDED_CORNERS,
+               TRIANGULAR_CORNERS } corners_shape_t;
+
 
 typedef enum { HEBM_NONE = ADJ_NONE,
                HEBM_VERTICAL = ADJ_LEFT_SCREEN_EDGE | ADJ_RIGHT_SCREEN_EDGE,
@@ -151,6 +157,10 @@ struct gaps_t {
     int left;
 };
 
+struct corners_t {
+    int size;
+    corners_shape_t shape;
+};
 /**
  * Focus wrapping modes.
  */
@@ -226,6 +236,7 @@ struct Workspace_Assignment {
     char *name;
     char *output;
     gaps_t gaps;
+    corners_t corners;
 
     TAILQ_ENTRY(Workspace_Assignment)
     ws_assignments;
@@ -663,6 +674,7 @@ struct Con {
 
     /** Only applicable for containers of type CT_WORKSPACE. */
     gaps_t gaps;
+    corners_t corners;
 
     struct Con *parent;
 

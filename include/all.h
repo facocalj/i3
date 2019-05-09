@@ -49,6 +49,7 @@
 #include "manage.h"
 #include "workspace.h"
 #include "i3.h"
+#include "corner.h"
 #include "x.h"
 #include "click.h"
 #include "key_press.h"
