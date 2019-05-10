@@ -309,6 +309,7 @@ state FOCUS_ON_WINDOW_ACTIVATION:
 
 # workspace <workspace> output <output>
 # workspace <workspace> gaps inner|outer <px>
+# workspace <workspace> corners rounded|triangular <px>
 state WORKSPACE:
   workspace = word
     -> WORKSPACE_COMMAND
@@ -318,6 +319,8 @@ state WORKSPACE_COMMAND:
       -> WORKSPACE_OUTPUT_WORD
   'gaps'
       -> GAPS
+  'corners'
+      -> CORNERS
 
 state WORKSPACE_OUTPUT_WORD:
   output = word
