@@ -2255,3 +2255,43 @@ void cmd_gaps(I3_CMD, const char *type, const char *scope, const char *mode, con
     // XXX: default reply for now, make this a better reply
     ysuccess(true);
 }
+
+
+void cmd_corners(I3_CMD, const char *scope, const char *shape, const char *value) {
+    int pixels = logical_px(atoi(value));
+    Con *workspace = con_get_workspace(focused);
+
+    corners_shape_t shape_t;
+
+    if ((shape == NULL) || !strcmp(shape, "default"))
+       shape_t = DEFAULT_CORNERS;
+    else if (!strcmp(shape, "rounded"))
+       shape_t = ROUNDED_CORNERS;
+    else if (!strcmp(shape, "triangular")) {
+       shape_t = TRIANGULAR_CORNERS;
+    } else {
+        ELOG("Invalid shape %s when changing corners", shape);
+        ysuccess(false);
+        return;
+    }
+
+    if (!strcmp(scope, "all")) {
+        Con *output, *cur_ws = NULL;
+        TAILQ_FOREACH(output, &(croot->nodes_head), nodes) {
+            Con *content = output_get_content(output);
+            TAILQ_FOREACH(cur_ws, &(content->nodes_head), nodes) {
+                cur_ws->corners.size = pixels;
+                cur_ws->corners.shape = shape_t;
+            }
+        }
+        config.corners.size = pixels;
+        config.corners.shape = shape_t;
+    } else {
+        workspace->corners.size = pixels;
+        workspace->corners.shape = config.corners.shape;
+    }
+
+    cmd_output->needs_tree_render = true;
+    // XXX: default reply for now, make this a better reply
+    ysuccess(true);
+}

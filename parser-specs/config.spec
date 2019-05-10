@@ -25,6 +25,7 @@ state INITIAL:
   'font'                                   -> FONT
   'mode'                                   -> MODENAME
   'gaps'                                   -> GAPS
+  'corners'                                -> CORNERS
   'smart_borders'                          -> SMART_BORDERS
   'smart_gaps'                             -> SMART_GAPS
   'floating_minimum_size'                  -> FLOATING_MINIMUM_SIZE_WIDTH
@@ -89,6 +90,15 @@ state SMART_GAPS:
       -> call cfg_smart_gaps($enabled)
   enabled = 'inverse_outer'
       -> call cfg_smart_gaps($enabled)
+
+# corners default|rounded|triangular <px>
+state CORNERS:
+  shape = 'default', 'rounded', 'triangular'
+      -> CORNERS_WITH_SHAPE
+
+state CORNERS_WITH_SHAPE:
+  value = number
+      -> call cfg_corners($workspace, $shape, &value)
 
 # floating_minimum_size <width> x <height>
 state FLOATING_MINIMUM_SIZE_WIDTH:

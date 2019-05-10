@@ -43,6 +43,7 @@ state INITIAL:
   'mode' -> MODE
   'bar' -> BAR
   'gaps' -> GAPS
+  'corners' -> CORNERS
 
 state CRITERIA:
   ctype = 'class'       -> CRITERION
@@ -93,6 +94,20 @@ state BORDER:
     -> call cmd_border($border_style, 0)
   '1pixel'
     -> call cmd_border("pixel", 1)
+
+
+# corners default|rounded|triangular [current] <px>
+state CORNERS:
+  shape = 'default', 'rounded', 'triangular'
+      -> CORNERS_WITH_SHAPE
+
+state CORNERS_WITH_SHAPE:
+  scope = 'current', 'all'
+      -> CORNERS_WITH_SCOPE
+
+state CORNERS_WITH_SCOPE:
+  value = word
+      -> call cmd_corners($scope, $shape, $value)
 
 # gaps inner|outer|horizontal|vertical|top|right|bottom|left [current] [set|plus|minus|toggle] <px>
 state GAPS:
@@ -149,7 +164,7 @@ state WORKSPACE:
       -> call cmd_workspace_back_and_forth()
   'number'
       -> WORKSPACE_NUMBER
-  workspace = string 
+  workspace = string
       -> call cmd_workspace_name($workspace, $no_auto_back_and_forth)
 
 state WORKSPACE_NUMBER:

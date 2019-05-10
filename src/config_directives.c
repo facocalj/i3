@@ -318,14 +318,15 @@ CFGFUN(smart_gaps, const char *enable) {
         config.smart_gaps = eval_boolstr(enable) ? SMART_GAPS_ON : SMART_GAPS_OFF;
 }
 
-static void create_corners_assignment(const char *workspace, corners_shape_t shape, int pixels) {
-    DLOG("Setting corners for workspace %s", workspace);
+static void create_corners_assignment(const char *workspace, corners_t corners) {
+    DLOG("Setting corners for workspace %s\n", workspace);
+    DLOG("S%d %d \n", corners.size, corners.shape);
 
     struct Workspace_Assignment *assignment;
     TAILQ_FOREACH(assignment, &ws_assignments, ws_assignments) {
         if (strcasecmp(assignment->name, workspace) == 0) {
-            assignment->corners.size = pixels;
-            assignment->corners.shape = shape;
+            assignment->corners.size = corners.size;
+            assignment->corners.shape = corners.shape;
 
             return;
         }
@@ -336,36 +337,46 @@ static void create_corners_assignment(const char *workspace, corners_shape_t sha
     assignment->name = sstrdup(workspace);
     assignment->output = NULL;
 
-    assignment->corners.size = pixels;
-    assignment->corners.shape = shape;
+    assignment->corners.size = corners.size;
+    assignment->corners.shape = corners.shape;
 
     TAILQ_INSERT_TAIL(&ws_assignments, assignment, ws_assignments);
 }
+
 CFGFUN(corners, const char *workspace, const char *shape, const long value) {
     int pixels = logical_px(value);
+    corners_t corners = (corners_t){0, DEFAULT_CORNERS};
 
+    DLOG("corners %s, %d   ______________\n", shape, pixels);
     // If no shape or default was defined
-    if ((shape == NULL) || !strcmp(shape, "default")) {
+    if (!strcmp(shape, "default")) {
+        DLOG("cor");
         if (workspace == NULL) {
             config.corners.size = 0;
             config.corners.shape = DEFAULT_CORNERS;
         } else {
-            create_corners_assignment(workspace, DEFAULT_CORNERS, pixels);
+
+            create_corners_assignment(workspace, corners);
         }
     } else if (!strcmp(shape, "rounded")) {
         if (workspace == NULL) {
             config.corners.size = pixels;
             config.corners.shape = ROUNDED_CORNERS;
+            DLOG("rounded corners\n");
         } else {
-
-            create_corners_assignment(workspace, ROUNDED_CORNERS, pixels);
+            corners.size = pixels;
+            corners.shape = ROUNDED_CORNERS;
+            create_corners_assignment(workspace, corners);
         }
     } else if (!strcmp(shape, "triangular")) {
         if (workspace == NULL) {
             config.corners.size = pixels;
             config.corners.shape = TRIANGULAR_CORNERS;
+            DLOG("triangular corners, %s\n", workspace);
         } else {
-            create_corners_assignment(workspace, TRIANGULAR_CORNERS, pixels);
+            corners.size = pixels;
+            corners.shape = TRIANGULAR_CORNERS;
+            create_corners_assignment(workspace, corners);
         }
     } else {
         ELOG("Invalid command, cannot process shape %s", shape);
