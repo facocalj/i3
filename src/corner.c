@@ -13,45 +13,43 @@
 /*
  * Apply shape to top corners when possible
  */
-void rounded_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *black) {
+void rounded_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
-    int32_t r = config.corners.size;
-    int32_t d = r * 2;
+    int32_t d = 2 * config.corners.size;
 
     xcb_arc_t arcs[] = {
-      { -1, 0, d, d, 0, 360 << 6 },
-      { w-d, 0, d, d, 0, 360 << 6 },
+      { 0, 0, d, d, 90 << 6, 90 << 6},
+      { w-d, 0, d, d, 0 << 6 , 90 << 6 },
     };
 
-    xcb_poly_fill_arc(conn, *pid, *black, 2, arcs);
+    xcb_poly_fill_arc(conn, *pid, *white, 2, arcs);
 }
 
 /*
  * Apply shape to bottom corners when possible
  */
-void rounded_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *black) {
+void rounded_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
-    int32_t r = config.corners.size;
-    int32_t d = r * 2;
+    int32_t d = 2 * config.corners.size;
 
     xcb_arc_t arcs[] = {
-       { -1, h-d, d, d, 0, 360 << 6 },
-       { w-d, h-d, d, d, 0, 360 << 6 }
+       { 0, h-d, d, d, 180 << 6, 90 << 6 },
+       { w-d, h-d, d, d, 270 << 6, 90 << 6 }
     };
 
-    xcb_poly_fill_arc(conn, *pid, *black, 2, arcs);
+    xcb_poly_fill_arc(conn, *pid, *white, 2, arcs);
 }
 
 /*
  * Apply shape to top corners when possible
  */
-void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *black) {
+void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 
     int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
@@ -59,37 +57,69 @@ void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *black) {
 
 
     xcb_point_t top_left_triangle[] = {
-        {0, 0}, {size, 0}, {0, size}, {0, 0}
+        {size, size}, {size, 0}, {0, size}, {size, size}
     };
 
     xcb_point_t top_right_triangle[] = {
-        {w-size, 0}, {w, 0}, {w, size}, {w-size, 0}
+        {w-size, 0}, {w, size}, {w-size, size}, {w-size, 0}
     };
 
-    xcb_fill_poly(conn, *pid, *black, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, top_left_triangle);
-    xcb_fill_poly(conn, *pid, *black, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, top_right_triangle);
+    xcb_fill_poly(conn, *pid, *white, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, top_left_triangle);
+    xcb_fill_poly(conn, *pid, *white, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, top_right_triangle);
 }
 
 /*
  * Apply shape to bottom corners when possible
  */
-void triangled_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *black) {
+void triangled_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 
     int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
     xcb_point_t bottom_left_triangle[] = {
-        {0, h-size}, {size, h}, {0, h}, {0, h-size}
+        {0, h-size}, {size, h-size}, {size, h}, {0, h-size}
     };
 
     xcb_point_t bottom_right_triangle[] = {
-        {w, h-size}, {w, h}, {w-size, h}, {w, h-size}
+        {w, h-size}, {w-size, h}, {w-size, h-size}, {w, h-size}
     };
 
-    xcb_fill_poly(conn, *pid, *black, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, bottom_left_triangle);
-    xcb_fill_poly(conn, *pid, *black, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, bottom_right_triangle);
+    xcb_fill_poly(conn, *pid, *white, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, bottom_left_triangle);
+    xcb_fill_poly(conn, *pid, *white, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 4, bottom_right_triangle);
 
+}
+
+/*
+ * Apply shape to bottom corners when possible
+ */
+void fill_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+
+    int32_t size = config.corners.size;
+    uint16_t w  = con->rect.width;
+    uint16_t h  = con->rect.height;
+
+    xcb_rectangle_t top_left_rectangle = {0, 0, size, size};
+    xcb_rectangle_t top_right_rectangle = {w-size, 0, size, size};
+
+    xcb_poly_fill_rectangle(conn, *pid, *white, 1, &top_left_rectangle);
+    xcb_poly_fill_rectangle(conn, *pid, *white, 1, &top_right_rectangle);
+}
+
+/*
+ * Apply shape to bottom corners when possible
+ */
+void fill_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+
+    int32_t size = config.corners.size;
+    uint16_t w  = con->rect.width;
+    uint16_t h  = con->rect.height;
+
+    xcb_rectangle_t bottom_left_rectangle = {0, h-size, size, size};
+    xcb_rectangle_t bottom_right_rectangle = {w-size, h-size, size, size};
+
+    xcb_poly_fill_rectangle(conn, *pid, *white, 1, &bottom_left_rectangle);
+    xcb_poly_fill_rectangle(conn, *pid, *white, 1, &bottom_right_rectangle);
 }
 
 void x_shape_window(Con *con) {
@@ -118,9 +148,20 @@ void x_shape_window(Con *con) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
+    int32_t size = config.corners.size;
 
-    xcb_rectangle_t bounding = {0, 0, w, h};
-    xcb_poly_fill_rectangle(conn, pid, white, 1, &bounding);
+    // Outer box, the rectangle window
+    xcb_rectangle_t outer_box = {0, 0, w, h};
+    // Inner box, without corners
+    xcb_point_t inner_box[] = {
+        {0, size}, {size, size}, {size, 0}, {w-size, 0}, {w-size, size}, {w, size},
+        {w, h-size}, {w-size, h-size}, {w-size, h}, {size, h}, {size, h-size}, {0, h-size}
+    };
+
+    // Fill the boxes
+    xcb_poly_fill_rectangle(conn, pid, black, 1, &outer_box);
+    xcb_fill_poly(conn, pid, white, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 12, inner_box);
+
 
     bool tab_or_stack = false;
     for (Con* current = con; current->parent->type != CT_WORKSPACE; current = current->parent)
@@ -131,21 +172,24 @@ void x_shape_window(Con *con) {
 
     if (con->parent->type == CT_WORKSPACE || !tab_or_stack) {
         if (config.corners.shape == ROUNDED_CORNERS) {
-            rounded_top(con, &pid, &black);
-            rounded_bottom(con, &pid, &black);
+            rounded_top(con, &pid, &white);
+            rounded_bottom(con, &pid, &white);
         } else if (config.corners.shape == TRIANGULAR_CORNERS){
-            triangled_top(con, &pid, &black);
-            triangled_bottom(con, &pid, &black);
-        } else {
+            triangled_top(con, &pid, &white);
+            triangled_bottom(con, &pid, &white);
+         } else if (config.corners.shape == TRIMMED_CORNERS){
+       } else {
           DLOG("corners %d, %d\n", config.corners.size, config.corners.shape);
         }
     }
 
     else {
         if (config.corners.shape == ROUNDED_CORNERS) {
-            rounded_bottom(con, &pid, &black);
+            rounded_bottom(con, &pid, &white);
         } else if (config.corners.shape == TRIANGULAR_CORNERS){
-            triangled_bottom(con, &pid, &black);
+            triangled_bottom(con, &pid, &white);
+         } else if (config.corners.shape == TRIMMED_CORNERS){
+            fill_top(con, &pid, &white);
         } else {
           DLOG("corners %d, %d\n", config.corners.size, config.corners.shape);
         }

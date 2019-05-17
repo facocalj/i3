@@ -378,6 +378,16 @@ CFGFUN(corners, const char *workspace, const char *shape, const long value) {
             corners.shape = TRIANGULAR_CORNERS;
             create_corners_assignment(workspace, corners);
         }
+    } else if (!strcmp(shape, "trimmed")) {
+        if (workspace == NULL) {
+            config.corners.size = pixels;
+            config.corners.shape = TRIMMED_CORNERS;
+            DLOG("trimmed corners, %s\n", workspace);
+        } else {
+            corners.size = pixels;
+            corners.shape = TRIMMED_CORNERS;
+            create_corners_assignment(workspace, corners);
+        }
     } else {
         ELOG("Invalid command, cannot process shape %s", shape);
     }

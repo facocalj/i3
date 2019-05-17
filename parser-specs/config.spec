@@ -93,7 +93,7 @@ state SMART_GAPS:
 
 # corners default|rounded|triangular <px>
 state CORNERS:
-  shape = 'default', 'rounded', 'triangular'
+  shape = 'default', 'rounded', 'triangular', 'trimmed'
       -> CORNERS_WITH_SHAPE
 
 state CORNERS_WITH_SHAPE:
