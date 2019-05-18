@@ -91,7 +91,7 @@ state SMART_GAPS:
   enabled = 'inverse_outer'
       -> call cfg_smart_gaps($enabled)
 
-# corners default|rounded|triangular <px>
+# corners default|rounded|triangular|trimmed <px>
 state CORNERS:
   shape = 'default', 'rounded', 'triangular', 'trimmed'
       -> CORNERS_WITH_SHAPE
@@ -318,6 +318,8 @@ state WORKSPACE_COMMAND:
       -> WORKSPACE_OUTPUT_WORD
   'gaps'
       -> GAPS
+  'corners'
+      -> CORNERS
 
 state WORKSPACE_OUTPUT_WORD:
   output = word

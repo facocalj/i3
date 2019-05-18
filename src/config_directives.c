@@ -347,10 +347,11 @@ CFGFUN(corners, const char *workspace, const char *shape, const long value) {
     int pixels = logical_px(value);
     corners_t corners = (corners_t){0, DEFAULT_CORNERS};
 
-    DLOG("corners %s, %d   ______________\n", shape, pixels);
+    DLOG("Setting shaped corners of size %d and shape %s to workspace %s \n",
+            pixels, shape, workspace);
+
     // If no shape or default was defined
     if (!strcmp(shape, "default")) {
-        DLOG("cor");
         if (workspace == NULL) {
             config.corners.size = 0;
             config.corners.shape = DEFAULT_CORNERS;
@@ -362,7 +363,6 @@ CFGFUN(corners, const char *workspace, const char *shape, const long value) {
         if (workspace == NULL) {
             config.corners.size = pixels;
             config.corners.shape = ROUNDED_CORNERS;
-            DLOG("rounded corners\n");
         } else {
             corners.size = pixels;
             corners.shape = ROUNDED_CORNERS;
@@ -372,7 +372,6 @@ CFGFUN(corners, const char *workspace, const char *shape, const long value) {
         if (workspace == NULL) {
             config.corners.size = pixels;
             config.corners.shape = TRIANGULAR_CORNERS;
-            DLOG("triangular corners, %s\n", workspace);
         } else {
             corners.size = pixels;
             corners.shape = TRIANGULAR_CORNERS;
@@ -382,7 +381,6 @@ CFGFUN(corners, const char *workspace, const char *shape, const long value) {
         if (workspace == NULL) {
             config.corners.size = pixels;
             config.corners.shape = TRIMMED_CORNERS;
-            DLOG("trimmed corners, %s\n", workspace);
         } else {
             corners.size = pixels;
             corners.shape = TRIMMED_CORNERS;
