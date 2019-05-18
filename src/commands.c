@@ -2263,7 +2263,7 @@ void cmd_corners(I3_CMD, const char *scope, const char *shape, const long value)
 
     corners_shape_t shape_t;
 
-    if ((shape == NULL) || !strcmp(shape, "default")) {
+    if (!strcmp(shape, "default")) {
        shape_t = DEFAULT_CORNERS;
     } else if (!strcmp(shape, "rounded")) {
        shape_t = ROUNDED_CORNERS;
@@ -2290,7 +2290,7 @@ void cmd_corners(I3_CMD, const char *scope, const char *shape, const long value)
         config.corners.shape = shape_t;
     } else {
         workspace->corners.size = pixels;
-        workspace->corners.shape = config.corners.shape;
+        workspace->corners.shape = shape_t;
     }
 
     cmd_output->needs_tree_render = true;

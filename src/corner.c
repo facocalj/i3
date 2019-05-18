@@ -13,12 +13,12 @@
 /*
  * Apply shape to top corners when possible
  */
-void rounded_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void rounded_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
-    int32_t d = 2 * config.corners.size;
+    int32_t d = 2 * size;
 
     xcb_arc_t arcs[] = {
       { 0, 0, d, d, 90 << 6, 90 << 6},
@@ -31,12 +31,12 @@ void rounded_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 /*
  * Apply shape to bottom corners when possible
  */
-void rounded_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void rounded_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
-    int32_t d = 2 * config.corners.size;
+    int32_t d = 2 * size;
 
     xcb_arc_t arcs[] = {
        { 0, h-d, d, d, 180 << 6, 90 << 6 },
@@ -49,9 +49,8 @@ void rounded_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 /*
  * Apply shape to top corners when possible
  */
-void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
-    int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
@@ -71,9 +70,8 @@ void triangled_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 /*
  * Apply shape to bottom corners when possible
  */
-void triangled_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void triangled_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
-    int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
@@ -93,9 +91,8 @@ void triangled_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 /*
  * Apply shape to bottom corners when possible
  */
-void fill_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void fill_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
-    int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
@@ -109,9 +106,8 @@ void fill_top(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
 /*
  * Apply shape to bottom corners when possible
  */
-void fill_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white) {
+void fill_bottom(Con *con, xcb_pixmap_t *pid, xcb_gcontext_t *white, int size) {
 
-    int32_t size = config.corners.size;
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
 
@@ -146,9 +142,10 @@ void x_shape_window(Con *con) {
     xcb_create_gc(conn, white, pid, XCB_GC_FOREGROUND, (uint32_t[]){1, 0});
     xcb_create_gc(conn, black, pid, XCB_GC_FOREGROUND, (uint32_t[]){0, 0});
 
+   Con* workspace = con_get_workspace(con);
     uint16_t w  = con->rect.width;
     uint16_t h  = con->rect.height;
-    int32_t size = config.corners.size;
+    int32_t size = workspace->corners.size;
 
     // Outer box, the rectangle window
     xcb_rectangle_t outer_box = {0, 0, w, h};
@@ -170,31 +167,33 @@ void x_shape_window(Con *con) {
             tab_or_stack = true;
     }
 
+
+
     if (con->parent->type == CT_WORKSPACE || !tab_or_stack) {
-        if (config.corners.shape == DEFAULT_CORNERS) {
-            fill_top(con, &pid, &white);
-            fill_bottom(con, &pid, &white);
-        } else if (config.corners.shape == ROUNDED_CORNERS) {
-            rounded_top(con, &pid, &white);
-            rounded_bottom(con, &pid, &white);
-        } else if (config.corners.shape == TRIANGULAR_CORNERS){
-            triangled_top(con, &pid, &white);
-            triangled_bottom(con, &pid, &white);
-         } else if (config.corners.shape == TRIMMED_CORNERS){
+        if (workspace->corners.shape == DEFAULT_CORNERS) {
+            fill_top(con, &pid, &white, workspace->corners.size);
+            fill_bottom(con, &pid, &white, workspace->corners.size);
+        } else if (workspace->corners.shape == ROUNDED_CORNERS) {
+            rounded_top(con, &pid, &white, workspace->corners.size);
+            rounded_bottom(con, &pid, &white, workspace->corners.size);
+        } else if (workspace->corners.shape == TRIANGULAR_CORNERS){
+            triangled_top(con, &pid, &white, workspace->corners.size);
+            triangled_bottom(con, &pid, &white, workspace->corners.size);
+         } else if (workspace->corners.shape == TRIMMED_CORNERS){
        } else {
-          DLOG("corners %d, %d\n", config.corners.size, config.corners.shape);
+          DLOG("corners %d, %d\n", workspace->corners.size, workspace->corners.shape);
         }
     }
 
     else {
-        if (config.corners.shape == ROUNDED_CORNERS) {
-            rounded_bottom(con, &pid, &white);
-        } else if (config.corners.shape == TRIANGULAR_CORNERS){
-            triangled_bottom(con, &pid, &white);
-         } else if (config.corners.shape == TRIMMED_CORNERS){
-            fill_top(con, &pid, &white);
+        if (workspace->corners.shape == ROUNDED_CORNERS) {
+            rounded_bottom(con, &pid, &white, workspace->corners.size);
+        } else if (workspace->corners.shape == TRIANGULAR_CORNERS){
+            triangled_bottom(con, &pid, &white, workspace->corners.size);
+         } else if (workspace->corners.shape == TRIMMED_CORNERS){
+            fill_top(con, &pid, &white, workspace->corners.size);
         } else {
-          DLOG("corners %d, %d\n", config.corners.size, config.corners.shape);
+          DLOG("corners %d, %d\n", workspace->corners.size, workspace->corners.shape);
         }
     }
 
