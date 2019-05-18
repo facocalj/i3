@@ -332,4 +332,4 @@ void cmd_debuglog(I3_CMD, const char *argument);
  */
 void cmd_gaps(I3_CMD, const char *type, const char *scope, const char *mode, const char *value);
 
-void cmd_corners(I3_CMD, const char *scope, const char *shape, const char *value);
+void cmd_corners(I3_CMD, const char *scope, const char *shape, const long value);

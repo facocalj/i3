@@ -171,7 +171,10 @@ void x_shape_window(Con *con) {
     }
 
     if (con->parent->type == CT_WORKSPACE || !tab_or_stack) {
-        if (config.corners.shape == ROUNDED_CORNERS) {
+        if (config.corners.shape == DEFAULT_CORNERS) {
+            fill_top(con, &pid, &white);
+            fill_bottom(con, &pid, &white);
+        } else if (config.corners.shape == ROUNDED_CORNERS) {
             rounded_top(con, &pid, &white);
             rounded_bottom(con, &pid, &white);
         } else if (config.corners.shape == TRIANGULAR_CORNERS){
