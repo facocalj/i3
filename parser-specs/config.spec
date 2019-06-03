@@ -91,9 +91,9 @@ state SMART_GAPS:
   enabled = 'inverse_outer'
       -> call cfg_smart_gaps($enabled)
 
-# corners default|rounded|triangular <px>
+# corners default|rounded|triangular|trimmed <px>
 state CORNERS:
-  shape = 'default', 'rounded', 'triangular'
+  shape = 'default', 'rounded', 'triangular', 'trimmed'
       -> CORNERS_WITH_SHAPE
 
 state CORNERS_WITH_SHAPE:

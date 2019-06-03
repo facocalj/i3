@@ -87,6 +87,7 @@ typedef enum { SMART_GAPS_OFF,
                SMART_GAPS_INVERSE_OUTER } smart_gaps_t;
 
 typedef enum { DEFAULT_CORNERS,
+               TRIMMED_CORNERS,
                ROUNDED_CORNERS,
                TRIANGULAR_CORNERS } corners_shape_t;
 

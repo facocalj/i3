@@ -132,6 +132,7 @@ Con *workspace_get(const char *num, bool *created) {
     if (workspace == NULL) {
         LOG("Creating new workspace \"%s\"\n", num);
         gaps_t gaps = (gaps_t){0, 0, 0, 0, 0};
+        corners_t corners = config.corners;
 
         /* We set workspace->num to the number if this workspace’s name begins
          * with a positive number. Otherwise it’s a named ws and num will be
@@ -142,9 +143,11 @@ Con *workspace_get(const char *num, bool *created) {
         TAILQ_FOREACH(assignment, &ws_assignments, ws_assignments) {
             if (strcmp(assignment->name, num) == 0) {
                 gaps = assignment->gaps;
+                corners = assignment->corners;
                 break;
             } else if (parsed_num != -1 && name_is_digits(assignment->name) && ws_name_to_number(assignment->name) == parsed_num) {
                 gaps = assignment->gaps;
+                corners = assignment->corners;
             }
         }
 
@@ -170,6 +173,7 @@ Con *workspace_get(const char *num, bool *created) {
         workspace->num = parsed_num;
         LOG("num = %d\n", workspace->num);
         workspace->gaps = gaps;
+        workspace->corners= corners;
 
         workspace->parent = content;
         _workspace_apply_default_orientation(workspace);
@@ -299,6 +303,7 @@ Con *create_workspace_on_output(Output *output, Con *content) {
     TAILQ_FOREACH(assignment, &ws_assignments, ws_assignments) {
         if (strcmp(assignment->name, ws->name) == 0) {
             ws->gaps = assignment->gaps;
+            ws->corners= assignment->corners;
             break;
         }
     }

@@ -96,9 +96,9 @@ state BORDER:
     -> call cmd_border("pixel", 1)
 
 
-# corners default|rounded|triangular [current] <px>
+# corners default|rounded|triangular|trimmed [current] <px>
 state CORNERS:
-  shape = 'default', 'rounded', 'triangular'
+  shape = 'default', 'rounded', 'triangular', 'trimmed'
       -> CORNERS_WITH_SHAPE
 
 state CORNERS_WITH_SHAPE:
@@ -106,8 +106,8 @@ state CORNERS_WITH_SHAPE:
       -> CORNERS_WITH_SCOPE
 
 state CORNERS_WITH_SCOPE:
-  value = word
-      -> call cmd_corners($scope, $shape, $value)
+  value = number
+      -> call cmd_corners($scope, $shape, &value)
 
 # gaps inner|outer|horizontal|vertical|top|right|bottom|left [current] [set|plus|minus|toggle] <px>
 state GAPS:

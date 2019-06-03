@@ -2257,18 +2257,20 @@ void cmd_gaps(I3_CMD, const char *type, const char *scope, const char *mode, con
 }
 
 
-void cmd_corners(I3_CMD, const char *scope, const char *shape, const char *value) {
-    int pixels = logical_px(atoi(value));
+void cmd_corners(I3_CMD, const char *scope, const char *shape, const long value) {
+    int pixels = logical_px(value);
     Con *workspace = con_get_workspace(focused);
 
     corners_shape_t shape_t;
 
-    if ((shape == NULL) || !strcmp(shape, "default"))
+    if (!strcmp(shape, "default")) {
        shape_t = DEFAULT_CORNERS;
-    else if (!strcmp(shape, "rounded"))
+    } else if (!strcmp(shape, "rounded")) {
        shape_t = ROUNDED_CORNERS;
-    else if (!strcmp(shape, "triangular")) {
+    } else if (!strcmp(shape, "triangular")) {
        shape_t = TRIANGULAR_CORNERS;
+    } else if (!strcmp(shape, "trimmed")) {
+       shape_t = TRIMMED_CORNERS;
     } else {
         ELOG("Invalid shape %s when changing corners", shape);
         ysuccess(false);
@@ -2288,7 +2290,7 @@ void cmd_corners(I3_CMD, const char *scope, const char *shape, const char *value
         config.corners.shape = shape_t;
     } else {
         workspace->corners.size = pixels;
-        workspace->corners.shape = config.corners.shape;
+        workspace->corners.shape = shape_t;
     }
 
     cmd_output->needs_tree_render = true;
