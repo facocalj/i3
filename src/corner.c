@@ -123,7 +123,7 @@ void x_shape_window(Con *con) {
     const xcb_query_extension_reply_t *shape_query;
     shape_query = xcb_get_extension_data(conn, &xcb_shape_id);
 
-    if (!shape_query->present || con->parent->type == CT_DOCKAREA) {
+    if (!shape_query->present || con->type == CT_FLOATING_CON || con->parent->type == CT_DOCKAREA) {
         return;
     }
 
